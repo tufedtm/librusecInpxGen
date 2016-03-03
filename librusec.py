@@ -70,6 +70,7 @@ def inp_check(inp_file):
 
 
 def archive_del_bad(zip_input):
+    # todo: path for fb2 and usr
     books_path = os.path.dirname(zip_input) + '/books/'
     inp_input = open('inp/online_bad.inp', 'r')
     _zip_input = zipfile.ZipFile(zip_input, 'r')
@@ -101,7 +102,7 @@ def archive_del_bad(zip_input):
     inp_input.close()
 
 
-path = 'F:/Lib.Rus.Ec + MyHomeLib[FB2+USR]/lib.rus.ec/'
+path = 'F:/Lib.Rus.Ec + MyHomeLib[FB2+USR]/lib.rus.ec/local/'
 archives = []
 for (dirpath, dirnames, filenames) in os.walk(path):
     archives.extend(filenames)
