@@ -15,11 +15,8 @@ def create_folders():
     создает все необходимые папки
     """
     for folder in NEW_FOLDERS:
-        if os.path.exists(folder):
-            print(folder + ' has already been created')
-        else:
+        if not os.path.exists(folder):
             os.makedirs(folder)
-            print(folder + ' is created')
 
 
 def download_librusec_dump():
@@ -31,7 +28,7 @@ def download_librusec_dump():
 
     for item in LIBRUSEC_DUMP_FILES:
         urllib.urlretrieve(link + item, NEW_FOLDERS['sqlgz'] + item)
-        print(item + ' is downloaded')
+        append_in_log('other', '%s скачан' % item)
 
 
 def unpack_librusec_dump():
@@ -143,14 +140,14 @@ def unpack_good_books(path_to_archives):
                     buff = open(path_to_archives + book_path + filename, 'wb')
                     buff.write(content)
                     buff.close()
-                    append_in_log(inspect.stack()[0][3], filename + ' is unpacked')
+                    append_in_log(inspect.stack()[0][3], filename + ' извлечен')
                 else:
-                    append_in_log(inspect.stack()[0][3], filename + ' is exist')
+                    append_in_log(inspect.stack()[0][3], filename + ' файл уже был')
             else:
-                append_in_log(inspect.stack()[0][3], filename + ' not unpacked, is "bad"')
+                append_in_log(inspect.stack()[0][3], filename + ' не извлечен, т.к. "плохой"')
 
         _zip_input.close()
         inp_input.close()
 
 
-unpack_good_books('F:\Lib.Rus.Ec + MyHomeLib[FB2+USR]\lib.rus.ec/')
+# unpack_good_books('F:\Lib.Rus.Ec + MyHomeLib[FB2+USR]\lib.rus.ec/')
