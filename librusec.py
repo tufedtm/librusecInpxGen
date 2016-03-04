@@ -23,25 +23,30 @@ def download_librusec_dump():
     """
     скачивает с оф.сайта последний дамп либрусека
     """
-    create_folders()
+    if not os.path.exists(NEW_FOLDERS['sqlgz']):
+        create_folders()
+
     link = 'http://lib.rus.ec/sql/'
 
     for item in LIBRUSEC_DUMP_FILES:
         urllib.urlretrieve(link + item, NEW_FOLDERS['sqlgz'] + item)
-        append_in_log('other', '%s скачан' % item)
+        append_in_log('%s скачан' % item)
 
 
 def unpack_librusec_dump():
     """
     распаковывает файлы дампа либрусека
     """
-    download_librusec_dump()
+    if not os.path.exists(NEW_FOLDERS['sqlgz']) or not os.listdir(NEW_FOLDERS['sqlgz']):
+        download_librusec_dump()
+
     for item in LIBRUSEC_DUMP_FILES:
         input_file = gzip.open(NEW_FOLDERS['sqlgz'] + item, 'rb')
         output_file = open(NEW_FOLDERS['sql'] + item[:-2], 'wb')
         output_file.write(input_file.read())
         input_file.close()
         output_file.close()
+        append_in_log('%s распакован' % item)
 
 
 def download_lib2inpx(version='64'):
@@ -50,6 +55,9 @@ def download_lib2inpx(version='64'):
 
     :param version: указывает какой разрядности версию скачивать
     """
+    if not os.path.exists(NEW_FOLDERS['sql']) or not os.listdir(NEW_FOLDERS['sql']):
+        unpack_librusec_dump()
+
     link = 'https://api.github.com/repos/rupor-github/InpxCreator/releases/latest'
     content = json.load(urllib.urlopen(link))
 
@@ -62,6 +70,7 @@ def download_lib2inpx(version='64'):
     file_name = content['name']
 
     urllib.urlretrieve(file_link, NEW_FOLDERS['lib2inpx'] + file_name)
+    append_in_log('lib2inpx скачан')
 
 
 def inp_check(inp_file):
@@ -140,14 +149,13 @@ def unpack_good_books(path_to_archives):
                     buff = open(path_to_archives + book_path + filename, 'wb')
                     buff.write(content)
                     buff.close()
-                    append_in_log(inspect.stack()[0][3], filename + ' извлечен')
+                    append_in_log(filename + ' извлечен', inspect.stack()[0][3])
                 else:
-                    append_in_log(inspect.stack()[0][3], filename + ' файл уже был')
+                    append_in_log(filename + ' файл уже был', inspect.stack()[0][3])
             else:
-                append_in_log(inspect.stack()[0][3], filename + ' не извлечен, т.к. "плохой"')
+                append_in_log(filename + ' не извлечен, т.к. "плохой"', inspect.stack()[0][3])
 
         _zip_input.close()
         inp_input.close()
-
 
 # unpack_good_books('F:\Lib.Rus.Ec + MyHomeLib[FB2+USR]\lib.rus.ec/')

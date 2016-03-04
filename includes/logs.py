@@ -4,7 +4,7 @@ from datetime import datetime
 from includes.settings import BASE_DIR, NEW_FOLDERS
 
 
-def append_in_log(filename, text):
+def append_in_log(text, filename='other'):
     """
     добавление в файл логов
 
