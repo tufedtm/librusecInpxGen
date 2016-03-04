@@ -1,5 +1,6 @@
 # coding=utf-8
 import gzip
+import inspect
 import json
 import os
 import urllib
@@ -126,27 +127,30 @@ def unpack_good_books(path_to_archives):
             id_bad_inp_mas.append(item.split('\x04')[5])
 
         for item in zip_id_mas:
+            filename = zip_items[zip_id_mas.index(item)]
 
             if item not in id_bad_inp_mas:
-                file_name = zip_items[zip_id_mas.index(item)]
-                file_extension = str(file_name).split('.')[-1]
+                file_extension = str(filename).split('.')[-1]
 
                 if file_extension == 'fb2':
                     book_path = books_paths['fb2']
                 else:
                     book_path = books_paths['usr']
 
-                content = _zip_input.read(file_name)
+                content = _zip_input.read(filename)
 
-                if not os.path.exists(path_to_archives + book_path + file_name):
-                    buff = open(path_to_archives + book_path + file_name, 'wb')
+                if not os.path.exists(path_to_archives + book_path + filename):
+                    buff = open(path_to_archives + book_path + filename, 'wb')
                     buff.write(content)
                     buff.close()
-                    append_in_log(unpack_good_books.__name__, path_to_archives + book_path + file_name + ' is unpacked')
+                    append_in_log(inspect.stack()[0][3], filename + ' is unpacked')
                 else:
-                    append_in_log(unpack_good_books.__name__, path_to_archives + book_path + file_name + ' is exist')
+                    append_in_log(inspect.stack()[0][3], filename + ' is exist')
+            else:
+                append_in_log(inspect.stack()[0][3], filename + ' not unpacked, is "bad"')
 
         _zip_input.close()
         inp_input.close()
 
-# unpack_good_books('F:\Lib.Rus.Ec + MyHomeLib[FB2+USR]\lib.rus.ec/')
+
+unpack_good_books('F:\Lib.Rus.Ec + MyHomeLib[FB2+USR]\lib.rus.ec/')

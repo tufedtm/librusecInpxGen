@@ -1,6 +1,6 @@
 # coding=utf-8
 import os
-from time import ctime
+from datetime import datetime
 from includes.settings import BASE_DIR, NEW_FOLDERS
 
 
@@ -15,4 +15,4 @@ def append_in_log(filename, text):
         os.makedirs(NEW_FOLDERS['logs'])
 
     with open(BASE_DIR + NEW_FOLDERS['logs'] + filename + '.log', 'a') as logfile:
-        logfile.write('%s\t%s\n\n' % (ctime(), text))
+        logfile.write('%s\t%s\n' % (datetime.now(), text))
