@@ -1,11 +1,13 @@
 # coding=utf-8
+import glob
 import gzip
 import inspect
 import json
 import os
+import shutil
 import urllib
 import zipfile
-from includes.getters import get_local_archives
+from includes.getters import get_local_archives, get_online_inp
 from includes.logs import append_in_log
 from includes.settings import BASE_DIR, LIBRUSEC_DUMP_FILES, NEW_FOLDERS
 
@@ -73,17 +75,49 @@ def download_lib2inpx(version='64'):
     append_in_log('lib2inpx скачан')
 
 
-def inp_check(inp_file):
+def run_lib2inpx(options='--process all --inpx-format 2.x --db-format 2011-11-06'):
+    """
+    запускает lib2inpx с заданными параметрами
+
+    :param options: входные параметры для lib2inpx
+    """
+    lib2inpx = BASE_DIR + NEW_FOLDERS['lib2inpx'] + 'lib2inpx.exe'
+    sql_files = BASE_DIR + NEW_FOLDERS['sql']
+
+    os.system('%s %s %s' % (lib2inpx, options, sql_files))
+
+    inpx_src = BASE_DIR + NEW_FOLDERS['lib2inpx'] + 'data/'
+    os.chdir(inpx_src)
+    inpx_src = inpx_src + glob.glob('*.inpx')[0]
+    inpx_dest = BASE_DIR + NEW_FOLDERS['inp']
+
+    shutil.copy(inpx_src, inpx_dest)
+    os.chdir(inpx_dest)
+    inpxfile = inpx_dest + glob.glob('*.inpx')[0]
+    inpxfile = zipfile.ZipFile(inpxfile, 'r')
+
+    if not os.path.exists(inpxfile.filename[:-5]):
+        os.makedirs(inpxfile.filename[:-5])
+
+    for item in inpxfile.infolist():
+        content = inpxfile.read(item)
+        tmp = open(inpxfile.filename[:-5] + '/' + item.filename, 'wb')
+        tmp.write(content)
+        tmp.close()
+
+
+def inp_check(inp_file=get_online_inp()):
     """
     создает из входного inp-файла два новых inp-файла
     1. только русские и английские книги
     2. остальные книги
 
-    :param inp_file: исходный inp-файл
+    :param inp_file: путь к файлу online.inp
     """
+
     inp_input = open(inp_file, 'r')
-    inp_output_good = open('inp/online_good.inp', 'w')
-    inp_output_bad = open('inp/online_bad.inp', 'w')
+    inp_output_good = open(BASE_DIR + NEW_FOLDERS['inp'] + 'good.inp', 'w')
+    inp_output_bad = open(BASE_DIR + NEW_FOLDERS['inp'] + 'bad.inp', 'w')
 
     for item in inp_input.readlines():
         tmp = item.split('\x04')

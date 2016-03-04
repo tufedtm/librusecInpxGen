@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+from settings import BASE_DIR, NEW_FOLDERS
 
 
 def get_local_archives(path):
@@ -16,3 +17,10 @@ def get_local_archives(path):
             archives.append(path + item)
 
     return archives
+
+
+def get_online_inp():
+    for root, dirs, files in os.walk(BASE_DIR + NEW_FOLDERS['inp']):
+        for item in files:
+            if item.endswith('online.inp'):
+                return os.path.join(root, item)

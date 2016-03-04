@@ -3,10 +3,11 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
 
 NEW_FOLDERS = {
-    'sqlgz': 'sqlgz/',
-    'sql': 'sql/',
+    'inp': 'inp/',
     'lib2inpx': 'lib2inpx/',
     'logs': 'logs/',
+    'sql': 'sql/',
+    'sqlgz': 'sqlgz/',
 }
 
 LIBRUSEC_DUMP_FILES = ['libavtor.sql.gz', 'libavtors.sql.gz', 'libbook.sql.gz', 'libgenre.sql.gz',
