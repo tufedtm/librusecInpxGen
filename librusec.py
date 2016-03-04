@@ -4,23 +4,16 @@ import json
 import os
 import urllib
 import zipfile
-
-new_folders = {
-    'sqlgz': 'sqlgz/',
-    'sql': 'sql/',
-    'lib2inpx': 'lib2inpx/'
-}
-
-files = ['libavtor.sql.gz', 'libavtors.sql.gz', 'libbook.sql.gz', 'libgenre.sql.gz', 'libgenremeta.sql.gz',
-         'libgenres.sql.gz', 'libjoinedbooks.sql.gz', 'libmag.sql.gz', 'libmags.sql.gz', 'libquality.sql.gz',
-         'librate.sql.gz', 'libseq.sql.gz', 'libseqs.sql.gz', 'libsrclang.sql.gz']
+from includes.getters import get_local_archives
+from includes.logs import append_in_log
+from includes.settings import BASE_DIR, LIBRUSEC_DUMP_FILES, NEW_FOLDERS
 
 
 def create_folders():
     """
     создает все необходимые папки
     """
-    for folder in new_folders:
+    for folder in NEW_FOLDERS:
         if os.path.exists(folder):
             print(folder + ' has already been created')
         else:
@@ -35,8 +28,8 @@ def download_librusec_dump():
     create_folders()
     link = 'http://lib.rus.ec/sql/'
 
-    for item in files:
-        urllib.urlretrieve(link + item, new_folders['sqlgz'] + item)
+    for item in LIBRUSEC_DUMP_FILES:
+        urllib.urlretrieve(link + item, NEW_FOLDERS['sqlgz'] + item)
         print(item + ' is downloaded')
 
 
@@ -45,9 +38,9 @@ def unpack_librusec_dump():
     распаковывает файлы дампа либрусека
     """
     download_librusec_dump()
-    for item in files:
-        input_file = gzip.open(new_folders['sqlgz'] + item, 'rb')
-        output_file = open(new_folders['sql'] + item[:-2], 'wb')
+    for item in LIBRUSEC_DUMP_FILES:
+        input_file = gzip.open(NEW_FOLDERS['sqlgz'] + item, 'rb')
+        output_file = open(NEW_FOLDERS['sql'] + item[:-2], 'wb')
         output_file.write(input_file.read())
         input_file.close()
         output_file.close()
@@ -70,7 +63,7 @@ def download_lib2inpx(version='64'):
     file_link = content['browser_download_url']
     file_name = content['name']
 
-    urllib.urlretrieve(file_link, new_folders['lib2inpx'] + file_name)
+    urllib.urlretrieve(file_link, NEW_FOLDERS['lib2inpx'] + file_name)
 
 
 def inp_check(inp_file):
@@ -98,52 +91,62 @@ def inp_check(inp_file):
     inp_output_bad.close()
 
 
-def archive_del_bad(zip_input):
+def unpack_good_books(path_to_archives):
     """
-    удаляет из архива:
-    файлы на не русском и английском
+    распаковывает из архивов с книгами только файлы соответствующие "хорошим"
 
     zip_id_mas - массив id книг в архиве
     id_inp - id мусорной книги
     id_bad_inp_mas - массив мусорных id
 
-    :param zip_input: архив с книгами с расширением zip
+    :param path_to_archives: путь к папке с архивами
     """
-    # todo: path for fb2 and usr
-    books_path = os.path.dirname(zip_input) + '/books/'
-    inp_input = open('inp/online_bad.inp', 'r')
-    _zip_input = zipfile.ZipFile(zip_input, 'r')
-    # zip_output = zipfile.ZipFile(zip_input[:-4] + '_new.zip', 'w', allowZip64=True)
-    zip_items = _zip_input.namelist()
-    zip_id_mas = []
+    local_archives = get_local_archives(path_to_archives)
 
-    if not os.path.exists(books_path):
-        os.makedirs(books_path)
+    books_paths = {
+        'fb2': 'fb2/',
+        'usr': 'usr/',
+    }
 
-    for item in zip_items:
-        zip_id_mas.append(str(str(item).split('.')[:-1])[2:-2])
+    for path in books_paths:
+        if not os.path.exists(path_to_archives + path):
+            os.makedirs(path_to_archives + path)
 
-    id_bad_inp_mas = []
-    for item in inp_input.readlines():
-        id_bad_inp_mas.append(item.split('\x04')[5])
+    for archive in local_archives:
+        inp_input = open('inp/online_bad.inp', 'r')
+        _zip_input = zipfile.ZipFile(archive, 'r')
+        zip_items = _zip_input.namelist()
+        zip_id_mas = []
 
-    for item in zip_id_mas:
+        for item in zip_items:
+            zip_id_mas.append(str(str(item).split('.')[:-1])[2:-2])
 
-        if item not in id_bad_inp_mas:
-            name = zip_items[zip_id_mas.index(item)]
-            content = _zip_input.read(name)
-            buff = open(books_path + name, 'wb')
-            buff.write(content)
-            buff.close()
+        id_bad_inp_mas = []
+        for item in inp_input.readlines():
+            id_bad_inp_mas.append(item.split('\x04')[5])
 
-    # zip_output.close()
-    _zip_input.close()
-    inp_input.close()
+        for item in zip_id_mas:
 
-# path = 'F:/Lib.Rus.Ec + MyHomeLib[FB2+USR]/lib.rus.ec/local/'
-# archives = []
-# for (dirpath, dirnames, filenames) in os.walk(path):
-#     archives.extend(filenames)
-#
-# for archive in archives:
-#     archive_del_bad(path + archive)
+            if item not in id_bad_inp_mas:
+                file_name = zip_items[zip_id_mas.index(item)]
+                file_extension = str(file_name).split('.')[-1]
+
+                if file_extension == 'fb2':
+                    book_path = books_paths['fb2']
+                else:
+                    book_path = books_paths['usr']
+
+                content = _zip_input.read(file_name)
+
+                if not os.path.exists(path_to_archives + book_path + file_name):
+                    buff = open(path_to_archives + book_path + file_name, 'wb')
+                    buff.write(content)
+                    buff.close()
+                    append_in_log(unpack_good_books.__name__, path_to_archives + book_path + file_name + ' is unpacked')
+                else:
+                    append_in_log(unpack_good_books.__name__, path_to_archives + book_path + file_name + ' is exist')
+
+        _zip_input.close()
+        inp_input.close()
+
+# unpack_good_books('F:\Lib.Rus.Ec + MyHomeLib[FB2+USR]\lib.rus.ec/')
