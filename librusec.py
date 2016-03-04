@@ -10,26 +10,41 @@ new_folders = {
     'sql': 'sql/',
     'lib2inpx': 'lib2inpx/'
 }
-url = 'http://lib.rus.ec/sql/'
+
 files = ['libavtor.sql.gz', 'libavtors.sql.gz', 'libbook.sql.gz', 'libgenre.sql.gz', 'libgenremeta.sql.gz',
          'libgenres.sql.gz', 'libjoinedbooks.sql.gz', 'libmag.sql.gz', 'libmags.sql.gz', 'libquality.sql.gz',
          'librate.sql.gz', 'libseq.sql.gz', 'libseqs.sql.gz', 'libsrclang.sql.gz']
 
-for folder in new_folders:
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-        print(folder + ' is created')
-    else:
-        print(folder + ' has already been created')
+
+def create_folders():
+    """
+    создает все необходимые папки
+    """
+    for folder in new_folders:
+        if os.path.exists(folder):
+            print(folder + ' has already been created')
+        else:
+            os.makedirs(folder)
+            print(folder + ' is created')
 
 
-def archive_download():
+def download_librusec_dump():
+    """
+    скачивает с оф.сайта последний дамп либрусека
+    """
+    create_folders()
+    link = 'http://lib.rus.ec/sql/'
+
     for item in files:
-        urllib.urlretrieve(url + item, new_folders['sqlgz'] + item)
+        urllib.urlretrieve(link + item, new_folders['sqlgz'] + item)
         print(item + ' is downloaded')
 
 
-def archive_unpack():
+def unpack_librusec_dump():
+    """
+    распаковывает файлы дампа либрусека
+    """
+    download_librusec_dump()
     for item in files:
         input_file = gzip.open(new_folders['sqlgz'] + item, 'rb')
         output_file = open(new_folders['sql'] + item[:-2], 'wb')
@@ -39,6 +54,11 @@ def archive_unpack():
 
 
 def download_lib2inpx(version='64'):
+    """
+    скачивает последнюю версию lib2inpx
+
+    :param version: указывает какой разрядности версию скачивать
+    """
     link = 'https://api.github.com/repos/rupor-github/InpxCreator/releases/latest'
     content = json.load(urllib.urlopen(link))
 
@@ -53,17 +73,14 @@ def download_lib2inpx(version='64'):
     urllib.urlretrieve(file_link, new_folders['lib2inpx'] + file_name)
 
 
-download_lib2inpx('32')
-
-"""
-    inp_check('online.inp')
-    создание 2 файлов
+def inp_check(inp_file):
+    """
+    создает из входного inp-файла два новых inp-файла
     1. только русские и английские книги
     2. остальные книги
-"""
 
-
-def inp_check(inp_file):
+    :param inp_file: исходный inp-файл
+    """
     inp_input = open(inp_file, 'r')
     inp_output_good = open('inp/online_good.inp', 'w')
     inp_output_bad = open('inp/online_bad.inp', 'w')
@@ -81,17 +98,17 @@ def inp_check(inp_file):
     inp_output_bad.close()
 
 
-"""
+def archive_del_bad(zip_input):
+    """
     удаляет из архива:
     файлы на не русском и английском
 
     zip_id_mas - массив id книг в архиве
     id_inp - id мусорной книги
     id_bad_inp_mas - массив мусорных id
-"""
 
-
-def archive_del_bad(zip_input):
+    :param zip_input: архив с книгами с расширением zip
+    """
     # todo: path for fb2 and usr
     books_path = os.path.dirname(zip_input) + '/books/'
     inp_input = open('inp/online_bad.inp', 'r')
