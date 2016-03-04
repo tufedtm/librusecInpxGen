@@ -1,10 +1,15 @@
 # coding=utf-8
 import gzip
+import json
 import os
 import urllib
 import zipfile
 
-new_folders = ['sqlgz/', 'sql/']
+new_folders = {
+    'sqlgz': 'sqlgz/',
+    'sql': 'sql/',
+    'lib2inpx': 'lib2inpx/'
+}
 url = 'http://lib.rus.ec/sql/'
 files = ['libavtor.sql.gz', 'libavtors.sql.gz', 'libbook.sql.gz', 'libgenre.sql.gz', 'libgenremeta.sql.gz',
          'libgenres.sql.gz', 'libjoinedbooks.sql.gz', 'libmag.sql.gz', 'libmags.sql.gz', 'libquality.sql.gz',
@@ -20,18 +25,35 @@ for folder in new_folders:
 
 def archive_download():
     for item in files:
-        urllib.urlretrieve(url + item, new_folders[0] + item)
+        urllib.urlretrieve(url + item, new_folders['sqlgz'] + item)
         print(item + ' is downloaded')
 
 
 def archive_unpack():
     for item in files:
-        input_file = gzip.open(new_folders[0] + item, 'rb')
-        output_file = open(new_folders[1] + item[:-2], 'wb')
+        input_file = gzip.open(new_folders['sqlgz'] + item, 'rb')
+        output_file = open(new_folders['sql'] + item[:-2], 'wb')
         output_file.write(input_file.read())
         input_file.close()
         output_file.close()
 
+
+def download_lib2inpx(version='64'):
+    link = 'https://api.github.com/repos/rupor-github/InpxCreator/releases/latest'
+    content = json.load(urllib.urlopen(link))
+
+    if version == '32':
+        content = content['assets'][0]
+    else:
+        content = content['assets'][1]
+
+    file_link = content['browser_download_url']
+    file_name = content['name']
+
+    urllib.urlretrieve(file_link, new_folders['lib2inpx'] + file_name)
+
+
+download_lib2inpx('32')
 
 """
     inp_check('online.inp')
@@ -101,11 +123,10 @@ def archive_del_bad(zip_input):
     _zip_input.close()
     inp_input.close()
 
-
-path = 'F:/Lib.Rus.Ec + MyHomeLib[FB2+USR]/lib.rus.ec/local/'
-archives = []
-for (dirpath, dirnames, filenames) in os.walk(path):
-    archives.extend(filenames)
-
-for archive in archives:
-    archive_del_bad(path + archive)
+# path = 'F:/Lib.Rus.Ec + MyHomeLib[FB2+USR]/lib.rus.ec/local/'
+# archives = []
+# for (dirpath, dirnames, filenames) in os.walk(path):
+#     archives.extend(filenames)
+#
+# for archive in archives:
+#     archive_del_bad(path + archive)
