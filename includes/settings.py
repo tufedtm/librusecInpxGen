@@ -14,3 +14,5 @@ LIBRUSEC_DUMP_FILES = ['libavtor.sql.gz', 'libavtors.sql.gz', 'libbook.sql.gz', 
                        'libgenremeta.sql.gz', 'libgenres.sql.gz', 'libjoinedbooks.sql.gz', 'libmag.sql.gz',
                        'libmags.sql.gz', 'libquality.sql.gz', 'librate.sql.gz', 'libseq.sql.gz', 'libseqs.sql.gz',
                        'libsrclang.sql.gz']
+
+LIBRUSEC_ARCHIVES_FOLDER = 'F:\Lib.Rus.Ec + MyHomeLib[FB2+USR]\lib.rus.ec/'
