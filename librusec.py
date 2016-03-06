@@ -110,8 +110,8 @@ def run_lib2inpx(options='--process all --inpx-format 2.x --db-format 2011-11-06
 def inp_check(inp_file=get_online_inp()):
     """
     создает из входного inp-файла два новых inp-файла
-    1. только русские и английские книги
-    2. остальные книги
+    1. только русские и английские книги и соответствующие выбранным жанрам - "хорошие"
+    2. остальные книги - "плохие"
 
     :param inp_file: путь к файлу online.inp
     """
@@ -218,4 +218,6 @@ def unpack_good_books(path_to_archives):
         _zip_input.close()
         inp_input.close()
 
-    print(datetime.now())
+        print(datetime.now(), archive)
+
+unpack_good_books(LIBRUSEC_ARCHIVES_FOLDER)
